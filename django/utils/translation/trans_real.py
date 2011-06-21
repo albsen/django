@@ -255,7 +255,7 @@ def do_translate(message, translation_function):
     """
     global _default
 
-    if getattr(eol_message,'replace',False):
+    if getattr(message,'replace',False):
         eol_message = message.replace('\r\n', '\n').replace('\r', '\n')
     else:
         eol_message = message
