@@ -297,11 +297,11 @@ class Model(object):
             # is *not* consumed. We rely on this, so don't change the order
             # without changing the logic.
             for val, field in izip(args, fields_iter):
-                setattr(self, field.attname, val)
+                setattr(self, field.attname, self._to_old_bool(field, val))
         else:
             # Slower, kwargs-ready version.
             for val, field in izip(args, fields_iter):
-                setattr(self, field.attname, val)
+                setattr(self, field.attname, self._to_old_bool(field, val))
                 kwargs.pop(field.name, None)
                 # Maintain compatibility with existing calls.
                 if isinstance(field.rel, ManyToOneRel):
@@ -367,6 +367,21 @@ class Model(object):
                 raise TypeError("'%s' is an invalid keyword argument for this function" % kwargs.keys()[0])
         super(Model, self).__init__()
         signals.post_init.send(sender=self.__class__, instance=self)
+
+    def _to_old_bool(self, field, val):
+        field_name = field.__class__.__name__
+        if field_name == 'BooleanField':
+            if val:
+                val = 1
+            else:
+                val = 0
+        elif field_name == 'NullBooleanField':
+            if val is not None:
+                if val:
+                    val = 1
+                else:
+                    val = 0
+        return val
 
     def __repr__(self):
         try:
